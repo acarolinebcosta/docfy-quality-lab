@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Docfy login response",
+  "type": "object",
+  "required": ["accessToken", "tokenType", "expiresIn"],
+  "properties": {
+    "accessToken": {
+      "type": "string",
+      "minLength": 1
+    },
+    "tokenType": {
+      "type": "string",
+      "enum": ["Bearer"]
+    },
+    "expiresIn": {
+      "type": "integer",
+      "minimum": 1
+    }
+  },
+  "additionalProperties": false
+}

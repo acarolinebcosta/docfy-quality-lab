@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Minimal OpenAPI document",
+  "type": "object",
+  "required": ["openapi", "info", "paths", "components"],
+  "properties": {
+    "openapi": {
+      "type": "string",
+      "pattern": "^3\\."
+    },
+    "info": {
+      "type": "object",
+      "required": ["title", "version"]
+    },
+    "paths": {
+      "type": "object"
+    },
+    "components": {
+      "type": "object",
+      "required": ["securitySchemes"]
+    }
+  },
+  "additionalProperties": true
+}

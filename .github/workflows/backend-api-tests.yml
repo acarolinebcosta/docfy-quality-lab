@@ -1,0 +1,119 @@
+name: Backend API Tests
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/backend-api-tests.yml"
+      - "tests/backend-api/**"
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/backend-api-tests.yml"
+      - "tests/backend-api/**"
+  workflow_dispatch:
+    inputs:
+      docfy_ref:
+        description: Branch, tag or commit from acarolinebcosta/Docfy
+        required: false
+        default: main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: backend-api-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend-api:
+    name: REST Assured regression
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: docfy_ci
+          POSTGRES_USER: docfy_ci
+          POSTGRES_PASSWORD: docfy_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U docfy_ci -d docfy_ci"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      DOCFY_API_BASE_URL: http://localhost:8080
+      DOCFY_HTTP_TIMEOUT_MS: 10000
+      SPRING_PROFILES_ACTIVE: dev
+      DB_URL: jdbc:postgresql://localhost:5432/docfy_ci
+      DB_USER: docfy_ci
+      DB_PASSWORD: docfy_ci
+      DOCFY_FILE_STORAGE_PATH: ${{ runner.temp }}/docfy-files
+
+    steps:
+      - name: Checkout quality lab
+        uses: actions/checkout@v7
+
+      - name: Checkout Docfy system under test
+        uses: actions/checkout@v7
+        with:
+          repository: acarolinebcosta/Docfy
+          ref: ${{ inputs.docfy_ref || 'main' }}
+          path: .sut/docfy
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+          cache-dependency-path: |
+            tests/backend-api/pom.xml
+            .sut/docfy/backend/pom.xml
+
+      - name: Generate ephemeral application credentials
+        shell: bash
+        run: |
+          seed_password="$(openssl rand -hex 24)"
+          echo "JWT_SECRET=$(openssl rand -hex 32)" >> "$GITHUB_ENV"
+          echo "DOCFY_DEV_SEED_PASSWORD=$seed_password" >> "$GITHUB_ENV"
+          echo "DOCFY_TEST_PASSWORD=$seed_password" >> "$GITHUB_ENV"
+
+      - name: Start Docfy backend
+        working-directory: .sut/docfy/backend
+        shell: bash
+        run: |
+          nohup ./mvnw --batch-mode spring-boot:run > backend.log 2>&1 &
+
+      - name: Wait for Docfy readiness
+        shell: bash
+        run: |
+          for attempt in {1..60}; do
+            if curl --fail --silent http://localhost:8080/actuator/health > /dev/null; then
+              exit 0
+            fi
+            sleep 2
+          done
+          tail -n 200 .sut/docfy/backend/backend.log
+          exit 1
+
+      - name: Run Backend API quality gates
+        working-directory: tests/backend-api
+        run: ./mvnw --batch-mode verify
+
+      - name: Upload test evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-api-evidence-${{ github.run_id }}
+          if-no-files-found: warn
+          retention-days: 14
+          path: |
+            tests/backend-api/target/surefire-reports/
+            tests/backend-api/target/allure-results/
+            .sut/docfy/backend/backend.log
