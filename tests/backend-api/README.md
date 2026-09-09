@@ -48,7 +48,14 @@ Também é possível substituir a URL por propriedade Java:
 ## Evidências
 
 O JUnit produz resultados em `target/surefire-reports` e o adaptador Allure grava dados em
-`target/allure-results`. Tokens e senhas não devem ser anexados aos relatórios.
+`target/allure-results`. O CI também publica um Step Summary com os totais reais da execução,
+os commits testados e o estado dos quality gates. Os artifacts preservam esses resultados e o
+log do backend por tempo limitado.
+
+As credenciais de CI são geradas a cada execução e mascaradas antes de entrarem no ambiente.
+Antes do upload, as evidências são verificadas e bloqueadas caso contenham qualquer uma dessas
+credenciais. O logging do REST Assured mantém headers sensíveis e corpos de request/response fora
+dos diagnósticos automáticos. Resultados gerados não são versionados no Git.
 
 ## Tags
 
