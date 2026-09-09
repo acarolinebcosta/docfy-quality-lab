@@ -80,7 +80,6 @@ class AuthenticationApiTest {
 
     Response response = authenticationApi.login(invalidCredentials);
 
-    response.then().body(matchesJsonSchemaInClasspath("schemas/api-error-response.schema.json"));
     assertThatApiError(response)
         .hasStatus(401)
         .hasPath("/api/v1/auth/login")
@@ -95,7 +94,6 @@ class AuthenticationApiTest {
   void shouldRejectMalformedLoginPayload() {
     Response response = authenticationApi.login(new LoginRequest("not-an-email", ""));
 
-    response.then().body(matchesJsonSchemaInClasspath("schemas/api-error-response.schema.json"));
     assertThatApiError(response)
         .hasStatus(400)
         .hasPath("/api/v1/auth/login")

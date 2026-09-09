@@ -29,10 +29,11 @@ A suíte automatizada cobre atualmente:
 - autenticação com credenciais válidas e inválidas;
 - proteção de recursos sem autenticação ou com token inválido;
 - RBAC por papel e recurso;
-- criação, listagem e consulta de documentos;
+- criação, atualização parcial, listagem e consulta de documentos;
 - validações de payload;
 - contratos JSON Schema;
-- visibilidade e ownership de documentos;
+- busca, filtros combinados e paginação;
+- visibilidade, ownership e integridade de documentos;
 - workflow básico de documentos;
 - geração e propagação de correlation ID;
 - regras arquiteturais com ArchUnit.

@@ -17,7 +17,11 @@ public final class RequestSpecifications {
     int timeout = TestConfiguration.httpTimeoutMilliseconds();
     RestAssuredConfig config =
         RestAssuredConfig.config()
-            .logConfig(logConfig().blacklistHeader("Authorization"))
+            .logConfig(
+                logConfig()
+                    .blacklistDefaultSensitiveHeaders()
+                    .blacklistHeader("Authorization")
+                    .enableLoggingOfRequestAndResponseIfValidationFails())
             .httpClient(
                 httpClientConfig()
                     .setParam("http.connection.timeout", timeout)
@@ -26,8 +30,14 @@ public final class RequestSpecifications {
     return new RequestSpecBuilder()
         .setBaseUri(TestConfiguration.baseUrl())
         .setAccept(ContentType.JSON)
-        .setContentType(ContentType.JSON)
         .setConfig(config)
+        .build();
+  }
+
+  public static RequestSpecification jsonRequest() {
+    return new RequestSpecBuilder()
+        .addRequestSpecification(defaultRequest())
+        .setContentType(ContentType.JSON)
         .build();
   }
 
@@ -39,6 +49,13 @@ public final class RequestSpecifications {
     return new RequestSpecBuilder()
         .addRequestSpecification(defaultRequest())
         .addHeader("Authorization", "Bearer " + accessToken)
+        .build();
+  }
+
+  public static RequestSpecification authenticatedJson(String accessToken) {
+    return new RequestSpecBuilder()
+        .addRequestSpecification(authenticated(accessToken))
+        .setContentType(ContentType.JSON)
         .build();
   }
 }

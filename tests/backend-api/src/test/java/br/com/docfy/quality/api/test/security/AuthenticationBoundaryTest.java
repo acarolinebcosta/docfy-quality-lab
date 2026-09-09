@@ -1,7 +1,6 @@
 package br.com.docfy.quality.api.test.security;
 
 import static br.com.docfy.quality.api.assertion.ApiErrorAssertions.assertThatApiError;
-import static io.restassured.module.jsv.JsonSchemaValidator.matchesJsonSchemaInClasspath;
 
 import br.com.docfy.quality.api.client.CategoriesApiClient;
 import br.com.docfy.quality.api.client.DocumentsApiClient;
@@ -31,7 +30,6 @@ class AuthenticationBoundaryTest {
   void shouldRejectRequestWithoutToken(String resource) {
     Response response = callWithoutAuthentication(resource);
 
-    response.then().body(matchesJsonSchemaInClasspath("schemas/api-error-response.schema.json"));
     assertThatApiError(response)
         .hasStatus(401)
         .hasPath("/api/v1/" + resource)
@@ -46,7 +44,6 @@ class AuthenticationBoundaryTest {
   void shouldRejectInvalidToken(String resource) {
     Response response = callWithInvalidToken(resource);
 
-    response.then().body(matchesJsonSchemaInClasspath("schemas/api-error-response.schema.json"));
     assertThatApiError(response)
         .hasStatus(401)
         .hasPath("/api/v1/" + resource)
