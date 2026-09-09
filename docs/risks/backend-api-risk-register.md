@@ -6,7 +6,7 @@ Escala: probabilidade e impacto de 1 a 5. A exposição é o produto dos dois va
 | --- | --- | --- | ---: | ---: | ---: | --- |
 | API-SEC-001 | Recurso protegido aceita requisição sem identidade válida | Segurança | 3 | 5 | 15 | Ausência e invalidez de Bearer token |
 | API-SEC-002 | Papel acessa operação ou documento incompatível com sua permissão | Segurança | 3 | 5 | 15 | RBAC na consulta, edição, busca e paginação |
-| API-FUN-001 | Transição inválida corrompe o ciclo do documento | Adequação funcional | 3 | 5 | 15 | Matriz de estados do workflow, planejada |
+| API-FUN-001 | Transição inválida corrompe o ciclo do documento | Adequação funcional | 3 | 5 | 15 | Ciclo completo, permissões e matriz de transições inválidas |
 | API-DAT-001 | Resposta ou persistência perde dados do documento | Confiabilidade | 3 | 4 | 12 | Criação, atualização parcial, leitura posterior e JSON Schema |
 | API-FUN-002 | Busca, filtros ou paginação retornam um conjunto incorreto | Adequação funcional | 3 | 4 | 12 | Busca isolada, filtros combinados e paginação após autorização |
 | API-CON-001 | Mudança incompatível quebra consumidores da API | Compatibilidade | 3 | 4 | 12 | OpenAPI e JSON Schemas versionados |
@@ -20,7 +20,8 @@ Escala: probabilidade e impacto de 1 a 5. A exposição é o produto dos dois va
 | Risco | Suíte |
 | --- | --- |
 | API-SEC-001 | `AuthenticationBoundaryTest` |
-| API-SEC-002 | `DocumentAuthorizationTest`, `DocumentUpdateApiTest`, `DocumentDiscoveryApiTest` |
+| API-SEC-002 | `DocumentAuthorizationTest`, `DocumentUpdateApiTest`, `DocumentDiscoveryApiTest`, `DocumentWorkflowApiTest` |
+| API-FUN-001 | `DocumentWorkflowApiTest` |
 | API-DAT-001 | `DocumentsApiTest`, `DocumentUpdateApiTest` |
 | API-FUN-002 | `DocumentDiscoveryApiTest` |
 | API-CON-001 | `PlatformContractTest`, `AuthenticationApiTest`, suítes de documentos |
@@ -31,7 +32,6 @@ Escala: probabilidade e impacto de 1 a 5. A exposição é o produto dos dois va
 
 | Risco | Próxima evolução |
 | --- | --- |
-| API-FUN-001 | Ampliar a matriz de transições válidas e inválidas do workflow |
 | API-FIL-001 | Cobrir upload multipart, limites e autorização |
 | API-AUD-001 | Validar geração e integridade observável dos eventos de auditoria |
 

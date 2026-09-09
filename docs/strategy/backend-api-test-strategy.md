@@ -15,7 +15,8 @@ observabilidade na fronteira HTTP do Docfy.
 - estrutura padronizada de erros;
 - criação, consulta e atualização parcial de documentos;
 - autorização por papel, ownership e estado do documento;
-- busca, filtros e paginação após a aplicação da visibilidade.
+- busca, filtros e paginação após a aplicação da visibilidade;
+- ciclo de vida completo e rejeição de transições inválidas.
 
 ## Fora do escopo desta etapa
 
@@ -72,7 +73,7 @@ desenvolvimento do Docfy e uma senha efêmera definida durante a subida do ambie
 ## Classificação
 
 As tags JUnit representam intenção de execução: `smoke`, `contract`, `authentication`,
-`security`, `observability`, `regression` e `requires-seed`.
+`security`, `workflow`, `observability`, `regression` e `requires-seed`.
 
 ## Gestão de falhas
 
