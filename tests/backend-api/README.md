@@ -35,6 +35,7 @@ Por tipo de teste:
 ./mvnw test -Dgroups=smoke
 ./mvnw test -Dgroups=contract
 ./mvnw test -Dgroups=security
+./mvnw test -Dgroups=workflow
 ./mvnw test -Dgroups=observability
 ```
 
@@ -58,6 +59,7 @@ O JUnit produz resultados em `target/surefire-reports` e o adaptador Allure grav
 | `authentication` | Emissão e rejeição de credenciais |
 | `security` | Fronteiras de autenticação e autorização |
 | `rbac` | Permissões por papel, ownership e estado do recurso |
+| `workflow` | Transições válidas, inválidas e permissões do ciclo documental |
 | `documents` | Comportamento e integridade do domínio de documentos |
 | `observability` | Correlation ID e diagnóstico |
 | `regression` | Cobertura funcional recorrente |

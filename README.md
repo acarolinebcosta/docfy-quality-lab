@@ -34,7 +34,7 @@ A suíte automatizada cobre atualmente:
 - contratos JSON Schema;
 - busca, filtros combinados e paginação;
 - visibilidade, ownership e integridade de documentos;
-- workflow básico de documentos;
+- ciclo completo do workflow e rejeição de transições inválidas;
 - geração e propagação de correlation ID;
 - regras arquiteturais com ArchUnit.
 
@@ -131,11 +131,10 @@ as diferentes camadas de automação.
 As próximas etapas planejadas são:
 
 1. automação E2E Web com Playwright e TypeScript;
-2. ampliação da matriz de estados do workflow de documentos;
-3. cobertura de upload e autorização de arquivos;
-4. validações de auditoria;
-5. testes de performance, carga e estresse;
-6. acessibilidade e usabilidade.
+2. cobertura de upload e autorização de arquivos;
+3. validações de auditoria;
+4. testes de performance, carga e estresse;
+5. acessibilidade e usabilidade.
 
 A evolução da suíte permanece orientada pelo risco e pela relevância das jornadas para o
 produto.
