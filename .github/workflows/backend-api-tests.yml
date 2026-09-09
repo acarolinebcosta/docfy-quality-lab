@@ -4,12 +4,14 @@ on:
   pull_request:
     paths:
       - ".github/workflows/backend-api-tests.yml"
+      - ".github/scripts/backend-api/**"
       - "tests/backend-api/**"
   push:
     branches:
       - main
     paths:
       - ".github/workflows/backend-api-tests.yml"
+      - ".github/scripts/backend-api/**"
       - "tests/backend-api/**"
   workflow_dispatch:
     inputs:
@@ -77,12 +79,25 @@ jobs:
       - name: Generate ephemeral application credentials
         shell: bash
         run: |
+          jwt_secret="$(openssl rand -hex 32)"
           seed_password="$(openssl rand -hex 24)"
+
+          echo "::add-mask::$jwt_secret"
+          echo "::add-mask::$seed_password"
+          echo "Masking verification: jwt=$jwt_secret seed=$seed_password"
+
           {
-            echo "JWT_SECRET=$(openssl rand -hex 32)"
+            echo "JWT_SECRET=$jwt_secret"
             echo "DOCFY_DEV_SEED_PASSWORD=$seed_password"
             echo "DOCFY_TEST_PASSWORD=$seed_password"
           } >> "$GITHUB_ENV"
+
+      - name: Capture tested revisions
+        id: revisions
+        shell: bash
+        run: |
+          echo "quality_lab_sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+          echo "docfy_sha=$(git -C .sut/docfy rev-parse HEAD)" >> "$GITHUB_OUTPUT"
 
       - name: Start Docfy backend
         working-directory: .sut/docfy/backend
@@ -105,11 +120,65 @@ jobs:
           exit 1
 
       - name: Run Backend API quality gates
+        id: quality_gates
         working-directory: tests/backend-api
         run: ./mvnw --batch-mode verify
 
-      - name: Upload test evidence
+      - name: Publish quality gate summary
         if: always()
+        shell: bash
+        env:
+          BUILD_RESULT: ${{ steps.quality_gates.outcome }}
+          QUALITY_LAB_SHA: ${{ steps.revisions.outputs.quality_lab_sha }}
+          DOCFY_SUT_SHA: ${{ steps.revisions.outputs.docfy_sha }}
+          CI_ENVIRONMENT: GitHub Actions / ubuntu-latest
+        run: |
+          export JAVA_VERSION
+          JAVA_VERSION="$(java -version 2>&1 | head -n 1)"
+          python3 .github/scripts/backend-api/generate_evidence.py
+          cat tests/backend-api/target/backend-api-summary.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Verify evidence contains no ephemeral credentials
+        id: evidence_safety
+        if: always()
+        shell: bash
+        run: |
+          evidence_paths=(
+            "tests/backend-api/target/surefire-reports"
+            "tests/backend-api/target/allure-results"
+            "tests/backend-api/target/backend-api-summary.md"
+            ".sut/docfy/backend/backend.log"
+          )
+          available_paths=()
+
+          for evidence_path in "${evidence_paths[@]}"; do
+            if [[ -e "$evidence_path" ]]; then
+              available_paths+=("$evidence_path")
+            fi
+          done
+
+          if [[ ${#available_paths[@]} -eq 0 ]]; then
+            echo "safe=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          evidence_is_safe=true
+          for sensitive_value in "$JWT_SECRET" "$DOCFY_DEV_SEED_PASSWORD" "$DOCFY_TEST_PASSWORD"; do
+            if [[ -n "$sensitive_value" ]] \
+              && grep --recursive --binary-files=text --fixed-strings --quiet \
+                -- "$sensitive_value" "${available_paths[@]}"; then
+              evidence_is_safe=false
+            fi
+          done
+
+          echo "safe=$evidence_is_safe" >> "$GITHUB_OUTPUT"
+          if [[ "$evidence_is_safe" != "true" ]]; then
+            echo "::error::Sensitive ephemeral value detected; evidence upload blocked."
+            exit 1
+          fi
+
+      - name: Upload test evidence
+        if: always() && steps.evidence_safety.outputs.safe == 'true'
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: backend-api-evidence-${{ github.run_id }}
@@ -118,4 +187,5 @@ jobs:
           path: |
             tests/backend-api/target/surefire-reports/
             tests/backend-api/target/allure-results/
+            tests/backend-api/target/backend-api-summary.md
             .sut/docfy/backend/backend.log

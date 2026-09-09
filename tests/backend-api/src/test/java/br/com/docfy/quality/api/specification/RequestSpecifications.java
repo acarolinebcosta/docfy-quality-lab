@@ -6,6 +6,7 @@ import static io.restassured.config.LogConfig.logConfig;
 import br.com.docfy.quality.api.config.TestConfiguration;
 import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.config.RestAssuredConfig;
+import io.restassured.filter.log.LogDetail;
 import io.restassured.http.ContentType;
 import io.restassured.specification.RequestSpecification;
 
@@ -21,7 +22,8 @@ public final class RequestSpecifications {
                 logConfig()
                     .blacklistDefaultSensitiveHeaders()
                     .blacklistHeader("Authorization")
-                    .enableLoggingOfRequestAndResponseIfValidationFails())
+                    .blacklistHeader("Set-Cookie")
+                    .enableLoggingOfRequestAndResponseIfValidationFails(LogDetail.HEADERS))
             .httpClient(
                 httpClientConfig()
                     .setParam("http.connection.timeout", timeout)
