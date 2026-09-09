@@ -72,50 +72,45 @@ class DocumentAuthorizationTest {
         .hasPath("/api/v1/documents/" + documentId + "/approve")
         .hasConsistentCorrelationId();
   }
+
   @Test
-@Tag("requires-seed")
-@Severity(SeverityLevel.BLOCKER)
-@DisplayName("Collaborator cannot read another collaborator draft document")
-void collaboratorShouldNotReadAnotherCollaboratorDraft() {
-  String ownerToken = login("ana@docfy.local");
-  String otherCollaboratorToken = login("joao@docfy.local");
+  @Tag("requires-seed")
+  @Severity(SeverityLevel.BLOCKER)
+  @DisplayName("Collaborator cannot read another collaborator draft document")
+  void collaboratorShouldNotReadAnotherCollaboratorDraft() {
+    String ownerToken = login("ana@docfy.local");
+    String otherCollaboratorToken = login("joao@docfy.local");
 
-  UUID documentId = createDraftDocument(ownerToken);
+    UUID documentId = createDraftDocument(ownerToken);
 
-  Response response =
-      documentsApi.getById(
-          otherCollaboratorToken,
-          documentId);
+    Response response = documentsApi.getById(otherCollaboratorToken, documentId);
 
-  assertThatApiError(response)
-      .hasStatus(404)
-      .hasPath("/api/v1/documents/" + documentId)
-      .hasConsistentCorrelationId();
-}
+    assertThatApiError(response)
+        .hasStatus(404)
+        .hasPath("/api/v1/documents/" + documentId)
+        .hasConsistentCorrelationId();
+  }
 
-@Test
-@Tag("requires-seed")
-@Severity(SeverityLevel.CRITICAL)
-@DisplayName("Manager can read collaborator draft document")
-void managerShouldReadCollaboratorDraft() {
-  String collaboratorToken = login("ana@docfy.local");
-  String managerToken = login("manager@docfy.local");
+  @Test
+  @Tag("requires-seed")
+  @Severity(SeverityLevel.CRITICAL)
+  @DisplayName("Manager can read collaborator draft document")
+  void managerShouldReadCollaboratorDraft() {
+    String collaboratorToken = login("ana@docfy.local");
+    String managerToken = login("manager@docfy.local");
 
-  UUID documentId = createDraftDocument(collaboratorToken);
+    UUID documentId = createDraftDocument(collaboratorToken);
 
-  Response response =
-      documentsApi.getById(
-          managerToken,
-          documentId);
+    Response response = documentsApi.getById(managerToken, documentId);
 
-  response
-      .then()
-      .statusCode(200)
-      .body("id", equalTo(documentId.toString()))
-      .body("status", equalTo("DRAFT"));
+    response
+        .then()
+        .statusCode(200)
+        .body("id", equalTo(documentId.toString()))
+        .body("status", equalTo("DRAFT"));
 
-  assertValidCorrelationId(response);
-}
+    assertValidCorrelationId(response);
+  }
 
   @Test
   @Tag("requires-seed")

@@ -86,6 +86,7 @@ A suíte possui verificações automatizadas para:
 - execução dos testes;
 - contratos de API;
 - regras arquiteturais;
+- sintaxe e expressões dos workflows com actionlint;
 - formatação;
 - compatibilidade da versão Java;
 - resolução consistente de dependências.
