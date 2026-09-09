@@ -84,7 +84,7 @@ jobs:
 
           echo "::add-mask::$jwt_secret"
           echo "::add-mask::$seed_password"
-          echo "Masking verification: jwt=$jwt_secret seed=$seed_password"
+          echo "Ephemeral CI credentials registered for masking."
 
           {
             echo "JWT_SECRET=$jwt_secret"

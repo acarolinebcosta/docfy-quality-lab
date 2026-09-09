@@ -77,16 +77,6 @@ def property_value(value: str) -> str:
     return value.replace("\\", "\\\\").replace("\n", "\\n").replace("\r", "")
 
 
-def write_allure_environment(metadata: dict[str, str]) -> None:
-    ALLURE_RESULTS_DIR.mkdir(parents=True, exist_ok=True)
-    content = "\n".join(
-        f"{key}={property_value(value)}" for key, value in metadata.items()
-    )
-    (ALLURE_RESULTS_DIR / "environment.properties").write_text(
-        content + "\n", encoding="utf-8"
-    )
-
-
 def write_summary(
     totals: TestTotals,
     backend_api: TestTotals,
@@ -132,14 +122,36 @@ def write_summary(
     SUMMARY_FILE.parent.mkdir(parents=True, exist_ok=True)
     SUMMARY_FILE.write_text(summary, encoding="utf-8")
 
-
 def required_environment(name: str) -> str:
     value = os.environ.get(name, "").strip()
     return value or "Unavailable"
 
 
+def write_allure_environment(metadata: dict[str, str]) -> None:
+    ALLURE_RESULTS_DIR.mkdir(parents=True, exist_ok=True)
+
+    safe_keys = {
+        "Quality Lab SHA": "Quality_Lab_SHA",
+        "Docfy SUT SHA": "Docfy_SUT_SHA",
+        "Environment": "Environment",
+        "Java Version": "Java_Version",
+        "Base URL": "Base_URL",
+    }
+
+    content = "\n".join(
+        f"{safe_keys[key]}={property_value(value)}"
+        for key, value in metadata.items()
+    )
+
+    (ALLURE_RESULTS_DIR / "environment.properties").write_text(
+        content + "\n",
+        encoding="utf-8",
+    )
+
+
 def main() -> None:
     build_result = os.environ.get("BUILD_RESULT", "unknown").strip().lower()
+
     metadata = {
         "Quality Lab SHA": required_environment("QUALITY_LAB_SHA"),
         "Docfy SUT SHA": required_environment("DOCFY_SUT_SHA"),
@@ -147,10 +159,18 @@ def main() -> None:
         "Java Version": required_environment("JAVA_VERSION"),
         "Base URL": required_environment("DOCFY_API_BASE_URL"),
     }
+
     totals, backend_api, json_schema, architecture = read_surefire_results()
+
     write_allure_environment(metadata)
+
     write_summary(
-        totals, backend_api, json_schema, architecture, metadata, build_result
+        totals,
+        backend_api,
+        json_schema,
+        architecture,
+        metadata,
+        build_result,
     )
 
 
