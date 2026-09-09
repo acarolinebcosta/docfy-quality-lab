@@ -57,6 +57,8 @@ O JUnit produz resultados em `target/surefire-reports` e o adaptador Allure grav
 | `contract` | Status, headers, JSON Schema e OpenAPI |
 | `authentication` | Emissão e rejeição de credenciais |
 | `security` | Fronteiras de autenticação e autorização |
+| `rbac` | Permissões por papel, ownership e estado do recurso |
+| `documents` | Comportamento e integridade do domínio de documentos |
 | `observability` | Correlation ID e diagnóstico |
 | `regression` | Cobertura funcional recorrente |
 | `requires-seed` | Depende dos usuários do perfil `dev` |

@@ -5,9 +5,10 @@ Escala: probabilidade e impacto de 1 a 5. A exposição é o produto dos dois va
 | ID | Risco | ISO/IEC 25010 | Prob. | Impacto | Exposição | Controle automatizado |
 | --- | --- | --- | ---: | ---: | ---: | --- |
 | API-SEC-001 | Recurso protegido aceita requisição sem identidade válida | Segurança | 3 | 5 | 15 | Ausência e invalidez de Bearer token |
-| API-SEC-002 | Papel acessa operação incompatível com sua permissão | Segurança | 3 | 5 | 15 | RBAC e visibilidade de documentos |
+| API-SEC-002 | Papel acessa operação ou documento incompatível com sua permissão | Segurança | 3 | 5 | 15 | RBAC na consulta, edição, busca e paginação |
 | API-FUN-001 | Transição inválida corrompe o ciclo do documento | Adequação funcional | 3 | 5 | 15 | Matriz de estados do workflow, planejada |
-| API-DAT-001 | Resposta ou persistência perde dados do documento | Confiabilidade | 3 | 4 | 12 | Criação, leitura posterior e JSON Schema |
+| API-DAT-001 | Resposta ou persistência perde dados do documento | Confiabilidade | 3 | 4 | 12 | Criação, atualização parcial, leitura posterior e JSON Schema |
+| API-FUN-002 | Busca, filtros ou paginação retornam um conjunto incorreto | Adequação funcional | 3 | 4 | 12 | Busca isolada, filtros combinados e paginação após autorização |
 | API-CON-001 | Mudança incompatível quebra consumidores da API | Compatibilidade | 3 | 4 | 12 | OpenAPI e JSON Schemas versionados |
 | API-OBS-001 | Erro não pode ser rastreado entre cliente e servidor | Manutenibilidade | 3 | 4 | 12 | Geração e propagação de correlation ID |
 | API-REL-001 | Serviço indisponível é confundido com falha funcional | Confiabilidade | 3 | 3 | 9 | Health check como precondição da execução |
@@ -19,9 +20,10 @@ Escala: probabilidade e impacto de 1 a 5. A exposição é o produto dos dois va
 | Risco | Suíte |
 | --- | --- |
 | API-SEC-001 | `AuthenticationBoundaryTest` |
-| API-SEC-002 | `DocumentAuthorizationTest` |
-| API-DAT-001 | `DocumentsApiTest` |
-| API-CON-001 | `PlatformContractTest`, `AuthenticationApiTest`, `DocumentsApiTest` |
+| API-SEC-002 | `DocumentAuthorizationTest`, `DocumentUpdateApiTest`, `DocumentDiscoveryApiTest` |
+| API-DAT-001 | `DocumentsApiTest`, `DocumentUpdateApiTest` |
+| API-FUN-002 | `DocumentDiscoveryApiTest` |
+| API-CON-001 | `PlatformContractTest`, `AuthenticationApiTest`, suítes de documentos |
 | API-OBS-001 | `CorrelationIdTest`, assertions de erro |
 | API-REL-001 | `PlatformContractTest` |
 

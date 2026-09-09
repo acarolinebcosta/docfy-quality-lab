@@ -5,16 +5,19 @@
 Fornecer feedback rápido e confiável sobre riscos funcionais, de segurança, compatibilidade e
 observabilidade na fronteira HTTP do Docfy.
 
-## Escopo inicial
+## Escopo atual
 
 - disponibilidade por `/actuator/health`;
 - contrato OpenAPI publicado em `/v3/api-docs`;
 - autenticação por `/api/v1/auth/login`;
 - proteção de recursos sem token ou com token inválido;
 - geração e propagação de `X-Correlation-ID`;
-- estrutura padronizada de erros.
+- estrutura padronizada de erros;
+- criação, consulta e atualização parcial de documentos;
+- autorização por papel, ownership e estado do documento;
+- busca, filtros e paginação após a aplicação da visibilidade.
 
-## Fora do escopo inicial
+## Fora do escopo desta etapa
 
 - comportamento interno de classes Spring;
 - mapeamento JPA e migrações isoladamente;
@@ -22,6 +25,10 @@ observabilidade na fronteira HTTP do Docfy.
 - carga e performance;
 - varredura automatizada de vulnerabilidades;
 - acesso direto ao banco para confirmar respostas HTTP.
+
+Os cenários desta etapa são testes de integração black-box: exercitam o processo real do Docfy
+pela fronteira HTTP e validam a persistência por novas requisições. Eles não usam mocks nem
+reproduzem testes unitários das classes do produto.
 
 ## Abordagem baseada em risco
 
