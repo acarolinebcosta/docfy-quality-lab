@@ -12,7 +12,7 @@ Escala: probabilidade e impacto de 1 a 5. A exposição é o produto dos dois va
 | API-CON-001 | Mudança incompatível quebra consumidores da API | Compatibilidade | 3 | 4 | 12 | OpenAPI e JSON Schemas versionados |
 | API-OBS-001 | Erro não pode ser rastreado entre cliente e servidor | Manutenibilidade | 3 | 4 | 12 | Geração e propagação de correlation ID |
 | API-REL-001 | Serviço indisponível é confundido com falha funcional | Confiabilidade | 3 | 3 | 9 | Health check como precondição da execução |
-| API-FIL-001 | Upload permite conteúdo, tamanho ou acesso indevido | Segurança | 2 | 5 | 10 | Matriz multipart e autorização, planejada |
+| API-FIL-001 | Upload permite conteúdo, tamanho ou acesso indevido | Segurança | 2 | 5 | 10 | Upload/download multipart, integridade binária, autorização, estado, tamanho, assinatura e filename seguro |
 | API-AUD-001 | Ação relevante não aparece ou pode ser alterada na auditoria | Segurança | 2 | 5 | 10 | Eventos e imutabilidade observável, planejada |
 
 ## Rastreabilidade atual
@@ -27,12 +27,12 @@ Escala: probabilidade e impacto de 1 a 5. A exposição é o produto dos dois va
 | API-CON-001 | `PlatformContractTest`, `AuthenticationApiTest`, suítes de documentos |
 | API-OBS-001 | `CorrelationIdTest`, assertions de erro |
 | API-REL-001 | `PlatformContractTest` |
+| API-FIL-001 | `DocumentFilesApiTest` |
 
 ## Riscos ainda sem cobertura automatizada completa
 
 | Risco | Próxima evolução |
 | --- | --- |
-| API-FIL-001 | Cobrir upload multipart, limites e autorização |
 | API-AUD-001 | Validar geração e integridade observável dos eventos de auditoria |
 
 O registro deve ser revisto quando surgirem novos endpoints, incidentes, defeitos relevantes
