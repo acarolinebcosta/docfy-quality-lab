@@ -1,0 +1,50 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "required": [
+    "id",
+    "documentId",
+    "originalFilename",
+    "contentType",
+    "size",
+    "uploadedBy",
+    "uploadedAt"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "documentId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "originalFilename": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 255
+    },
+    "contentType": {
+      "type": "string",
+      "enum": [
+        "application/pdf",
+        "text/plain",
+        "image/png",
+        "image/jpeg"
+      ]
+    },
+    "size": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "uploadedBy": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "uploadedAt": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "additionalProperties": false
+}

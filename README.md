@@ -10,7 +10,7 @@ do sistema.
 ## Estado atual
 
 A trilha de Backend/REST API já possui uma fundação arquitetural e cobertura crítica de
-plataforma, contratos, autenticação, autorização, documentos e observabilidade.
+plataforma, contratos, autenticação, autorização, documentos, arquivos e observabilidade.
 
 | Trilha | Estado |
 | --- | --- |
@@ -35,6 +35,7 @@ A suíte automatizada cobre atualmente:
 - busca, filtros combinados e paginação;
 - visibilidade, ownership e integridade de documentos;
 - ciclo completo do workflow e rejeição de transições inválidas;
+- upload multipart, download, integridade binária e segurança de arquivos;
 - geração e propagação de correlation ID;
 - regras arquiteturais com ArchUnit.
 
@@ -130,11 +131,10 @@ as diferentes camadas de automação.
 
 As próximas etapas planejadas são:
 
-1. automação E2E Web com Playwright e TypeScript;
-2. cobertura de upload e autorização de arquivos;
-3. validações de auditoria;
-4. testes de performance, carga e estresse;
-5. acessibilidade e usabilidade.
+1. validações de auditoria para fechar os riscos críticos restantes de Backend/API;
+2. automação E2E Web com Playwright e TypeScript;
+3. testes de performance, carga e estresse;
+4. acessibilidade e usabilidade.
 
 A evolução da suíte permanece orientada pelo risco e pela relevância das jornadas para o
 produto.
