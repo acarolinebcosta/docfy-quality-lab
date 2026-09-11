@@ -13,7 +13,7 @@ Escala: probabilidade e impacto de 1 a 5. A exposição é o produto dos dois va
 | API-OBS-001 | Erro não pode ser rastreado entre cliente e servidor | Manutenibilidade | 3 | 4 | 12 | Geração e propagação de correlation ID |
 | API-REL-001 | Serviço indisponível é confundido com falha funcional | Confiabilidade | 3 | 3 | 9 | Health check como precondição da execução |
 | API-FIL-001 | Upload permite conteúdo, tamanho ou acesso indevido | Segurança | 2 | 5 | 10 | Upload/download multipart, integridade binária, autorização, estado, tamanho, assinatura e filename seguro |
-| API-AUD-001 | Ação relevante não aparece ou pode ser alterada na auditoria | Segurança | 2 | 5 | 10 | Eventos e imutabilidade observável, planejada |
+| API-AUD-001 | Ação relevante não aparece ou pode ser alterada na auditoria | Segurança | 2 | 5 | 10 | Eventos de workflow, ordem, rastreabilidade, RBAC e imutabilidade observável |
 
 ## Rastreabilidade atual
 
@@ -28,12 +28,17 @@ Escala: probabilidade e impacto de 1 a 5. A exposição é o produto dos dois va
 | API-OBS-001 | `CorrelationIdTest`, assertions de erro |
 | API-REL-001 | `PlatformContractTest` |
 | API-FIL-001 | `DocumentFilesApiTest` |
+| API-AUD-001 | `DocumentAuditApiTest` |
 
-## Riscos ainda sem cobertura automatizada completa
+## Estado da cobertura crítica
 
-| Risco | Próxima evolução |
-| --- | --- |
-| API-AUD-001 | Validar geração e integridade observável dos eventos de auditoria |
+Todos os riscos críticos atualmente catalogados para a fronteira Backend/REST API possuem
+cobertura automatizada. `API-AUD-001` é verificado por eventos de submissão, aprovação,
+rejeição e arquivamento, preservação da ordem cronológica, propagação de correlation ID,
+controle de acesso, ausência de evento após transição rejeitada e append-only observável.
+
+Essa conclusão não representa cobertura de todos os tipos de teste possíveis para o backend.
+Performance, resiliência, concorrência e DAST permanecem trilhas de qualidade independentes.
 
 O registro deve ser revisto quando surgirem novos endpoints, incidentes, defeitos relevantes
 ou alterações nas regras de negócio.

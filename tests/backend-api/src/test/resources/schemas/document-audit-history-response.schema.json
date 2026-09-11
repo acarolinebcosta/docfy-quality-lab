@@ -1,0 +1,67 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Docfy document audit history response",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "required": [
+      "id",
+      "documentId",
+      "actorId",
+      "action",
+      "previousStatus",
+      "newStatus",
+      "occurredAt",
+      "correlationId"
+    ],
+    "properties": {
+      "id": {
+        "type": "string",
+        "format": "uuid"
+      },
+      "documentId": {
+        "type": "string",
+        "format": "uuid"
+      },
+      "actorId": {
+        "type": "string",
+        "format": "uuid"
+      },
+      "action": {
+        "type": "string",
+        "enum": [
+          "DOCUMENT_SUBMITTED",
+          "DOCUMENT_APPROVED",
+          "DOCUMENT_REJECTED",
+          "DOCUMENT_ARCHIVED"
+        ]
+      },
+      "previousStatus": {
+        "type": "string",
+        "enum": [
+          "DRAFT",
+          "IN_REVIEW",
+          "APPROVED",
+          "ARCHIVED"
+        ]
+      },
+      "newStatus": {
+        "type": "string",
+        "enum": [
+          "DRAFT",
+          "IN_REVIEW",
+          "APPROVED",
+          "ARCHIVED"
+        ]
+      },
+      "occurredAt": {
+        "type": "string",
+        "format": "date-time"
+      },
+      "correlationId": {
+        "type": ["string", "null"]
+      }
+    },
+    "additionalProperties": false
+  }
+}
