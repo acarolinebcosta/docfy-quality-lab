@@ -18,6 +18,7 @@ observabilidade na fronteira HTTP do Docfy.
 - busca, filtros e paginação após a aplicação da visibilidade;
 - ciclo de vida completo e rejeição de transições inválidas;
 - upload multipart, listagem, download, integridade e segurança de arquivos documentais.
+- histórico de auditoria, rastreabilidade de ações, RBAC e append-only observável.
 
 ## Fora do escopo desta etapa
 
@@ -47,6 +48,7 @@ qualidade.
 | Functional | Validar regras e resultados do domínio | Todo pull request |
 | Security/RBAC | Impedir acesso indevido por recurso e papel | Todo pull request |
 | Observability | Preservar diagnóstico e correlação | Todo pull request |
+| Audit/Integrity | Preservar eventos relevantes, autoria, ordem e rastreabilidade | Todo pull request |
 | Resilience | Avaliar entradas e falhas controladas | Regressão |
 
 ## Ambientes e configuração
@@ -74,7 +76,7 @@ desenvolvimento do Docfy e uma senha efêmera definida durante a subida do ambie
 ## Classificação
 
 As tags JUnit representam intenção de execução: `smoke`, `contract`, `authentication`,
-`security`, `workflow`, `files`, `observability`, `regression` e `requires-seed`.
+`security`, `workflow`, `files`, `audit`, `observability`, `regression` e `requires-seed`.
 
 ## Gestão de falhas
 

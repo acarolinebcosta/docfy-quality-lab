@@ -37,6 +37,7 @@ Por tipo de teste:
 ./mvnw test -Dgroups=security
 ./mvnw test -Dgroups=workflow
 ./mvnw test -Dgroups=files
+./mvnw test -Dgroups=audit
 ./mvnw test -Dgroups=observability
 ```
 
@@ -69,6 +70,7 @@ dos diagnósticos automáticos. Resultados gerados não são versionados no Git.
 | `rbac` | Permissões por papel, ownership e estado do recurso |
 | `workflow` | Transições válidas, inválidas e permissões do ciclo documental |
 | `files` | Multipart, autorização, integridade e validação de arquivos documentais |
+| `audit` | Eventos de workflow, autoria, ordem, rastreabilidade e append-only observável |
 | `documents` | Comportamento e integridade do domínio de documentos |
 | `observability` | Correlation ID e diagnóstico |
 | `regression` | Cobertura funcional recorrente |
