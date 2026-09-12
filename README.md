@@ -9,16 +9,16 @@ do sistema.
 
 ## Estado atual
 
-A trilha de Backend/REST API já possui uma fundação arquitetural e cobertura crítica de
-plataforma, contratos, autenticação, autorização, documentos, arquivos, auditoria e
-observabilidade. Todos os riscos críticos atualmente catalogados para essa fronteira possuem
-cobertura automatizada.
+As trilhas de Backend/REST API e performance possuem fundação arquitetural, estratégia orientada
+a risco, portões automatizados e evidências reproduzíveis. A regressão de API cobre a fronteira
+HTTP crítica. A suíte k6 avalia a jornada de catálogo e detalhe sob smoke, carga de referência e
+stress controlado.
 
 | Trilha | Estado |
 | --- | --- |
 | Backend/REST API | Cobertura crítica orientada a risco concluída |
 | E2E Web | Próxima fase |
-| Performance, carga e estresse | Planejada |
+| Performance, carga e stress | Implementada com k6 e thresholds como código |
 | Acessibilidade | Planejada |
 | Usabilidade | Planejada |
 
@@ -45,6 +45,22 @@ A suíte automatizada cobre atualmente:
 
 A qualidade da própria suíte também é protegida por Spotless, Maven Enforcer e execução
 automatizada em CI.
+
+## Cobertura atual de performance
+
+A suíte k6 cobre uma jornada read-only de manager pela interface HTTP pública:
+
+- autenticação segura como precondição;
+- catálogo de categorias e documentos;
+- detalhe, histórico de auditoria e metadata de arquivos;
+- smoke automático em pull requests;
+- carga de referência e stress progressivo por execução manual;
+- thresholds globais e por operação para checks, erros HTTP e percentis de latência;
+- interrupção de segurança quando o stress produz erro excessivo;
+- Step Summary, resultado JSON, SHAs testados e secret scan antes do artifact.
+
+Os limites são guardrails do ambiente efêmero do laboratório e não representam SLOs ou capacidade
+de produção.
 
 ## Abordagem de qualidade
 
@@ -85,6 +101,15 @@ sem dependência das implementações internas do Spring.
 - GitHub Actions
 - PostgreSQL efêmero em CI
 
+### Performance
+
+- Grafana k6 1.8
+- JavaScript
+- executores por cenário
+- thresholds como código
+- GitHub Actions
+- PostgreSQL e Docfy reais no CI
+
 ## Quality Gates
 
 A suíte possui verificações automatizadas para:
@@ -95,7 +120,11 @@ A suíte possui verificações automatizadas para:
 - sintaxe e expressões dos workflows com actionlint;
 - formatação;
 - compatibilidade da versão Java;
-- resolução consistente de dependências.
+- resolução consistente de dependências;
+- checks funcionais sob concorrência;
+- taxa de erro e p95/p99 de latência;
+- thresholds por operação;
+- proteção de destino remoto, masking e secret scan das evidências.
 
 A validação completa pode ser executada com:
 
@@ -105,6 +134,15 @@ A validação completa pode ser executada com:
 
 no módulo `tests/backend-api`.
 
+O smoke de performance pode ser executado com:
+
+```bash
+k6 run workloads/smoke.js
+```
+
+no módulo `tests/performance`. Carga e stress possuem acionamento controlado, conforme a estratégia
+da trilha.
+
 ## Documentação
 
 - [Arquitetura de testes de Backend/API](docs/architecture/backend-api-test-architecture.md)
@@ -112,6 +150,11 @@ no módulo `tests/backend-api`.
 - [Estratégia de testes](docs/strategy/backend-api-test-strategy.md)
 - [Registro de riscos](docs/risks/backend-api-risk-register.md)
 - [Como executar a suíte](tests/backend-api/README.md)
+- [Arquitetura de testes de performance](docs/architecture/performance-test-architecture.md)
+- [ADR-002: arquitetura e stack de performance](docs/adr/ADR-002-performance-test-architecture.md)
+- [Estratégia de performance](docs/strategy/performance-test-strategy.md)
+- [Registro de riscos de performance](docs/risks/performance-risk-register.md)
+- [Como executar performance, carga e stress](tests/performance/README.md)
 
 ## Estrutura
 
@@ -124,7 +167,8 @@ docfy-quality-lab/
 │   └── strategy/            # Estratégias de teste
 │
 └── tests/
-    └── backend-api/         # Testes black-box em Java e REST Assured
+    ├── backend-api/         # Testes black-box em Java e REST Assured
+    └── performance/         # Performance, carga e stress HTTP com k6
 ```
 
 Cada trilha possui dependências, estratégia e ciclo de execução próprios. Isso permite
@@ -136,8 +180,9 @@ as diferentes camadas de automação.
 As próximas etapas planejadas são:
 
 1. automação E2E Web com Playwright e TypeScript;
-2. testes de performance, carga e estresse;
-3. acessibilidade e usabilidade.
+2. acessibilidade e usabilidade;
+3. evolução futura de performance com baselines históricos, spike e soak quando houver ambiente
+   adequado.
 
 A evolução da suíte permanece orientada pelo risco e pela relevância das jornadas para o
 produto.

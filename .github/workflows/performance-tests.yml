@@ -1,0 +1,233 @@
+name: Performance Quality Gates
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/performance-tests.yml"
+      - "tests/performance/**"
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/performance-tests.yml"
+      - "tests/performance/**"
+  workflow_dispatch:
+    inputs:
+      profile:
+        description: Performance workload to execute
+        required: true
+        default: smoke
+        type: choice
+        options:
+          - smoke
+          - load
+          - stress
+      docfy_ref:
+        description: Branch, tag or commit from acarolinebcosta/Docfy
+        required: false
+        default: main
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: performance-${{ github.workflow }}-${{ github.ref }}-${{ inputs.profile || 'smoke' }}
+  cancel-in-progress: true
+
+jobs:
+  performance:
+    name: k6 ${{ inputs.profile || 'smoke' }} gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: docfy_ci
+          POSTGRES_USER: docfy_ci
+          POSTGRES_PASSWORD: docfy_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U docfy_ci -d docfy_ci"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      PERFORMANCE_PROFILE: ${{ inputs.profile || 'smoke' }}
+      DOCFY_API_BASE_URL: http://localhost:8080
+      K6_HTTP_TIMEOUT: 10s
+      K6_THINK_TIME_SECONDS: 1
+      SPRING_PROFILES_ACTIVE: dev
+      DB_URL: jdbc:postgresql://localhost:5432/docfy_ci
+      DB_USER: docfy_ci
+      DB_PASSWORD: docfy_ci
+
+    steps:
+      - name: Checkout quality lab
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Checkout Docfy system under test
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: acarolinebcosta/Docfy
+          ref: ${{ inputs.docfy_ref || 'main' }}
+          path: .sut/docfy
+
+      - name: Set up Java 21
+        uses: actions/setup-java@dd06d9cba3e5552c54d9f8ea23572deb30010f7c # v6.0.0
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+          cache-dependency-path: .sut/docfy/backend/pom.xml
+
+      - name: Set up k6
+        uses: grafana/setup-k6-action@db07bd9765aac508ef18982e52ab937fe633a065 # v1.2.1
+        with:
+          k6-version: "1.8.0"
+
+      - name: Generate ephemeral application credentials
+        shell: bash
+        run: |
+          jwt_secret="$(openssl rand -hex 32)"
+          seed_password="$(openssl rand -hex 24)"
+
+          echo "::add-mask::$jwt_secret"
+          echo "::add-mask::$seed_password"
+          echo "Ephemeral CI credentials registered for masking."
+
+          {
+            echo "JWT_SECRET=$jwt_secret"
+            echo "DOCFY_DEV_SEED_PASSWORD=$seed_password"
+            echo "DOCFY_TEST_PASSWORD=$seed_password"
+          } >> "$GITHUB_ENV"
+
+      - name: Capture tested revisions
+        id: revisions
+        shell: bash
+        run: |
+          echo "quality_lab_sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+          echo "docfy_sha=$(git -C .sut/docfy rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Start Docfy backend
+        working-directory: .sut/docfy/backend
+        shell: bash
+        env:
+          DOCFY_FILE_STORAGE_PATH: ${{ runner.temp }}/docfy-files
+        run: |
+          nohup ./mvnw --batch-mode spring-boot:run > backend.log 2>&1 &
+
+      - name: Wait for Docfy readiness
+        shell: bash
+        run: |
+          for _attempt in {1..60}; do
+            if curl --fail --silent http://localhost:8080/actuator/health > /dev/null; then
+              exit 0
+            fi
+            sleep 2
+          done
+          tail -n 200 .sut/docfy/backend/backend.log
+          exit 1
+
+      - name: Inspect k6 workloads
+        working-directory: tests/performance
+        shell: bash
+        run: |
+          mkdir -p artifacts
+          for profile in smoke load stress; do
+            k6 inspect "workloads/${profile}.js" \
+              > "artifacts/${profile}-inspect.json"
+          done
+
+      - name: Run performance quality gate
+        id: performance_gate
+        working-directory: tests/performance
+        shell: bash
+        env:
+          QUALITY_LAB_SHA: ${{ steps.revisions.outputs.quality_lab_sha }}
+          DOCFY_SUT_SHA: ${{ steps.revisions.outputs.docfy_sha }}
+          CI_ENVIRONMENT: GitHub Actions / ubuntu-latest
+        run: |
+          set +e
+          set -o pipefail
+          k6 run --summary-mode=compact "workloads/${PERFORMANCE_PROFILE}.js" \
+            2>&1 | tee "artifacts/${PERFORMANCE_PROFILE}-k6.log"
+          k6_exit_code="${PIPESTATUS[0]}"
+          echo "$k6_exit_code" > "artifacts/${PERFORMANCE_PROFILE}-exit-code.txt"
+          exit "$k6_exit_code"
+
+      - name: Publish performance summary
+        if: always()
+        working-directory: tests/performance
+        shell: bash
+        env:
+          PERFORMANCE_GATE_RESULT: ${{ steps.performance_gate.outcome }}
+        run: |
+          summary_path="artifacts/${PERFORMANCE_PROFILE}-summary.md"
+          if [[ -f "$summary_path" ]]; then
+            cat "$summary_path" >> "$GITHUB_STEP_SUMMARY"
+            {
+              echo
+              echo "## Workflow gate result: ${PERFORMANCE_GATE_RESULT^^}"
+            } >> "$GITHUB_STEP_SUMMARY"
+          else
+            {
+              echo "# Docfy Performance Quality Gate"
+              echo
+              echo "Workflow gate result: FAIL"
+              echo
+              echo "No k6 summary was produced. Inspect the job log and backend evidence."
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Verify evidence contains no ephemeral credentials
+        id: evidence_safety
+        if: always()
+        shell: bash
+        run: |
+          evidence_paths=(
+            "tests/performance/artifacts"
+            ".sut/docfy/backend/backend.log"
+          )
+          available_paths=()
+
+          for evidence_path in "${evidence_paths[@]}"; do
+            if [[ -e "$evidence_path" ]]; then
+              available_paths+=("$evidence_path")
+            fi
+          done
+
+          if [[ ${#available_paths[@]} -eq 0 ]]; then
+            echo "safe=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          evidence_is_safe=true
+          for sensitive_value in "$JWT_SECRET" "$DOCFY_DEV_SEED_PASSWORD" "$DOCFY_TEST_PASSWORD"; do
+            if [[ -n "$sensitive_value" ]] \
+              && grep --recursive --binary-files=text --fixed-strings --quiet \
+                -- "$sensitive_value" "${available_paths[@]}"; then
+              evidence_is_safe=false
+            fi
+          done
+
+          echo "safe=$evidence_is_safe" >> "$GITHUB_OUTPUT"
+          if [[ "$evidence_is_safe" != "true" ]]; then
+            echo "::error::Sensitive ephemeral value detected; evidence upload blocked."
+            exit 1
+          fi
+
+      - name: Upload performance evidence
+        if: always() && steps.evidence_safety.outputs.safe == 'true'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: performance-${{ env.PERFORMANCE_PROFILE }}-evidence-${{ github.run_id }}
+          if-no-files-found: warn
+          retention-days: 14
+          path: |
+            tests/performance/artifacts/
+            .sut/docfy/backend/backend.log
