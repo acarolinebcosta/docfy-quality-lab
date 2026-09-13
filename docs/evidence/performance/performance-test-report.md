@@ -215,11 +215,11 @@ tenha produzido uma taxa excessiva de erros, em vez de manter carga sem valor di
 
 As três camadas abaixo têm significados diferentes e não devem ser combinadas:
 
-| Camada | Significado | Evidência local desta execução |
+| Camada | Significado | Evidência disponível |
 | --- | --- | --- |
 | Threshold result | Avaliação das métricas contra os limites definidos no script | PASS nos três perfis |
-| k6 process exit code | Resultado numérico do processo, incluindo exceções de script e thresholds | não coletado numericamente nas execuções originais |
-| Workflow result | Resultado completo do job, incluindo ambiente, k6, summary, secret scan e upload | não coletado; execução de PR ainda pendente |
+| k6 process exit code | Resultado numérico do processo, incluindo exceções de script e thresholds | não coletado numericamente nas execuções locais originais; persistido pelo smoke de CI, cujo processo concluiu com sucesso |
+| Workflow result | Resultado completo do job, incluindo ambiente, k6, summary, secret scan e upload | PASS no smoke do PR e no smoke pós-merge da `main`; load/stress ainda não executados no CI |
 
 As execuções selecionadas concluíram sem exceção reportada e seus thresholds passaram. Entretanto,
 como o exit code numérico original não foi persistido, ele permanece documentado como “não
@@ -251,8 +251,25 @@ selecionado neste relatório foi preservado no output da execução; um smoke po
 validar o formato final do summary, sobrescreveu o JSON local e também ficou verde. Essa limitação de
 retenção local é registrada para não atribuir ao JSON atual um valor que ele já não contém.
 
-O secret scan local não encontrou as credenciais efêmeras nos arquivos de evidência. A validação no
-GitHub Actions ainda precisa ser produzida antes do merge.
+O secret scan local não encontrou as credenciais efêmeras nos arquivos de evidência. O fluxo de
+segurança das evidências também concluiu com sucesso no smoke do PR e no smoke pós-merge da `main`.
+Nos dois casos, o job terminou verde e o artifact condicionado ao resultado do scan foi publicado.
+
+### 8.1 Validação no GitHub Actions
+
+| Execução | Evento | Revisão do Quality Lab | Resultado | Duração | Artifact |
+| --- | --- | --- | --- | ---: | --- |
+| [PR #11](https://github.com/acarolinebcosta/docfy-quality-lab/actions/runs/34785426538) | `pull_request` | `85bb7cc193a95949dd754c6c5baa0728baa66721` | PASS | 1m19s | `performance-smoke-evidence-34785426538` (10,6 KB) |
+| [`main` após o merge](https://github.com/acarolinebcosta/docfy-quality-lab/actions/runs/34785733206) | `push` | `8ac1138cacd18c493577b679651a6bb81288a1cf` | PASS | 57s | `performance-smoke-evidence-34785733206` (10,7 KB) |
+
+As duas execuções usaram o perfil smoke. A execução da `main` publicou o artifact com digest
+`sha256:889604aee711f91ec39a446ee3d17f650a28ee5852ca21656512cf86d35f9670`. Os valores
+numéricos de latência deste relatório continuam sendo os resultados locais identificados na seção
+de ambiente; métricas do CI não foram substituídas ou inferidas a partir do status do workflow.
+
+Reference load e controlled stress permanecem como execuções dedicadas a serem disparadas
+manualmente no GitHub Actions. Os resultados locais desses dois perfis não devem ser apresentados
+como resultados do runner do GitHub.
 
 ## 9. Riscos cobertos
 
@@ -261,8 +278,8 @@ GitHub Actions ainda precisa ser produzida antes do merge.
 | `PERF-REL-001` | Load e controlled stress; checks e taxa de erro | Coberto até 10/35 VUs pelo período testado, sem erros observados |
 | `PERF-EFF-001` | Smoke, load e controlled stress; p95/p99 global e p95 por operação | Coberto dentro dos thresholds e do ambiente local testado |
 | `PERF-REL-002` | Controlled stress; rampa e abort por erro excessivo | Controle configurado; caminho de abort não exercitado porque não houve erro excessivo |
-| `PERF-SEC-001` | Bloqueio de destino remoto, credenciais efêmeras e secret scan | Controles locais validados; confirmação do CI ainda pendente |
-| `PERF-OBS-001` | Summary, identificação dos SHAs e relatório permanente | Parcial: evidência local disponível; Step Summary do GitHub ainda não coletado |
+| `PERF-SEC-001` | Bloqueio de destino remoto, credenciais efêmeras e secret scan | Controles locais e caminho seguro de publicação validados nos smokes de CI; rejeição deliberada de artifact contaminado não exercitada |
+| `PERF-OBS-001` | Summary, identificação dos SHAs e relatório permanente | Summary e artifact validados para smoke; execuções dedicadas de load/stress ainda pendentes no CI |
 
 Nenhum risco de recuperação após saturação é marcado como coberto. A execução não incluiu
 fault injection, saturação confirmada nem uma fase de recuperação sob carga reduzida.
@@ -286,16 +303,15 @@ Não foi comprovado:
 - comportamento em spike, soak ou carga prolongada;
 - performance do navegador e Core Web Vitals;
 - repetibilidade estatística em múltiplas execuções e máquinas equivalentes;
-- resultado do workflow e dos artifacts no GitHub Actions.
+- repetição de reference load e controlled stress no runner do GitHub Actions.
 
 Próximos passos recomendados:
 
-1. executar o smoke no pull request e confirmar Step Summary, exit code, secret scan e artifact;
-2. executar load e controlled stress manualmente no GitHub Actions para obter evidências dedicadas;
-3. repetir o mesmo perfil em condições equivalentes antes de estabelecer tendência;
-4. coletar características de CPU e memória quando o objetivo passar a ser comparação de baseline;
-5. criar um perfil separado de saturação e recuperação somente em ambiente autorizado e adequado;
-6. avaliar spike e soak como incrementos independentes, sem tratá-los como cobertos agora.
+1. executar load e controlled stress manualmente no GitHub Actions para obter evidências dedicadas;
+2. repetir o mesmo perfil em condições equivalentes antes de estabelecer tendência;
+3. coletar características de CPU e memória quando o objetivo passar a ser comparação de baseline;
+4. criar um perfil separado de saturação e recuperação somente em ambiente autorizado e adequado;
+5. avaliar spike e soak como incrementos independentes, sem tratá-los como cobertos agora.
 
 ## Tabela-resumo
 
