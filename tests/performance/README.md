@@ -95,6 +95,7 @@ tags ou mensagens. O diretório `artifacts` nunca deve ser versionado.
 
 ## Documentação relacionada
 
+- [Relatório técnico da execução local](../../docs/evidence/performance/performance-test-report.md)
 - [ADR-002](../../docs/adr/ADR-002-performance-test-architecture.md)
 - [Arquitetura](../../docs/architecture/performance-test-architecture.md)
 - [Estratégia](../../docs/strategy/performance-test-strategy.md)

@@ -98,7 +98,7 @@ export const profiles = {
   stress: {
     label: "Controlled stress",
     objective: "Observe service behavior above the reference load with a safe abort guard.",
-    workload: "Ramp to 35 VUs, hold controlled stress, then recover over 90 seconds",
+    workload: "Ramp to 35 VUs, hold controlled stress, then ramp down over 90 seconds",
     options: {
       ...commonOptions,
       scenarios: {

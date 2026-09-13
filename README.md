@@ -155,6 +155,7 @@ da trilha.
 - [Estratégia de performance](docs/strategy/performance-test-strategy.md)
 - [Registro de riscos de performance](docs/risks/performance-risk-register.md)
 - [Como executar performance, carga e stress](tests/performance/README.md)
+- [Relatório técnico da execução local de performance](docs/evidence/performance/performance-test-report.md)
 
 ## Estrutura
 
