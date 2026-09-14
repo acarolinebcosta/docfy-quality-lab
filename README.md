@@ -7,6 +7,14 @@ O objetivo deste repositório é exercitar o produto como um consumidor externo,
 evidências reproduzíveis de qualidade e evoluir a cobertura automatizada a partir dos riscos
 do sistema.
 
+## Jornada demonstrada
+
+![Jornada feliz do Docfy: criação, anexo, submissão, aprovação, arquivamento e audit trail](docs/assets/docfy-happy-path.gif)
+
+A demonstração utiliza exclusivamente dados sintéticos em ambiente local e percorre a jornada
+documental pela interface real: criação e upload por collaborator, submissão para revisão,
+aprovação e arquivamento por manager, com confirmação no audit trail.
+
 ## Estado atual
 
 As trilhas de Backend/REST API e performance possuem fundação arquitetural, estratégia orientada
